@@ -1,0 +1,70 @@
+Insert Operation
+INSERT INTO Coach
+VALUES(:bind1, TO_DATE(:bind2,'YYYY/MM/DD'),:bind3)
+
+Delete Operation
+DELETE FROM Coach 
+WHERE username='INSERT';
+
+Update Operation
+UPDATE Player 
+SET " . $newAtt . "='" . $newVal . "' 
+WHERE playername='" . $playerName . "' AND playernumber=$playerNum
+
+Select operation
+SELECT * 
+FROM " . $playerOrTeam . " 
+WHERE " . $att1 . "='" . $val1 . "' AND " . $att2 . "='" . $val2 . "'"
+
+Projection operation
+SELECT " . substr($selectStr, 0, -2) . 
+" FROM Player"
+
+
+JOIN QUERY FIND equipment for players who have scored more than x goals
+SELECT p.playerName,p.playerNumber,p.goalsScored,p.fantasyTeamName,p.realTeamName,e.skateModel,e.stickModel
+FROM Player p, EquipR1 e
+WHERE p.playerName = e.playerName AND p.playerNumber = e.playerNumber AND e.lockerNumber=1 AND p.goalsScored>4;
+
+Aggregation with Group By
+find teams where every player scored more than x goals and sum goals per team based on condition
+SELECT p.fantasyTeamName,sum(pl.goals)
+FROM Player p, PlayedIn pl, Match m
+WHERE p.playerName = pl.playerName AND p.playerNumber = pl.playerNumber AND m.id = pl.ID AND p.goalsScored>10
+GROUP BY p.fantasyTeamName;
+
+Aggregation with Having
+find average goals scored by teams who have scored more than x average goals
+SELECT p.fantasyTeamName,avg(pl.goals)
+FROM Player p, PlayedIn pl, Match m
+WHERE p.playerName = pl.playerName AND p.playerNumber = pl.playerNumber AND m.id = pl.ID
+GROUP BY p.fantasyTeamName
+HAVING avg(p.goalsScored)>0;
+
+Nested Aggregation with Group By
+select the player on each team with the most goals on teams more than x matches
+SELECT max(p.playerName) as Playername,p.fantasyTeamName,MAX(p.goalsscored)
+FROM Player p, PlayedIn pl
+WHERE p.playerNumber = pl.playerNumber AND p.fantasyTeamName IN
+(SELECT distinct p.fantasyTeamName
+FROM Player p, PlayedIn pl, Match m
+WHERE p.playerName = pl.playerName AND p.playerNumber = pl.playerNumber AND m.id = pl.ID
+GROUP BY p.fantasyTeamName,p.playerName,p.playerNumber
+HAVING count(m.id)>1)
+GROUP BY p.fantasyTeamName;
+
+DIVISION Operation
+SELECT DISTINCT p.playerName 
+FROM Player p, fantasyTeam f 
+WHERE NOT EXISTS (
+(SELECT id FROM 
+(SELECT DISTINCT p2.fantasyTeamName, m.id 
+FROM Player p2, PlayedIn pl, Match m 
+WHERE p2.playerName = pl.playerName AND p2.playerNumber = pl.playerNumber AND m.id = pl.ID AND p2.fantasyteamname = f.fantasyTeamName)
+) MINUS 
+(SELECT pi.id 
+FROM PlayedIn pi 
+WHERE pi.playername = p.playername AND p.playerNumber = pi.playerNumber))
+            
+
+
